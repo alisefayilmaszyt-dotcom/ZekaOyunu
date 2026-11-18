@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100K Prosedürel Zeka & Hafıza Arenası</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b, #311042);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        header {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 12px;
+        }
+        .logo-area h1 {
+            font-size: 1.1rem;
+            background: linear-gradient(90deg, #38bdf8, #c084fc, #f43f5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .logo-area span {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .stats-panel {
+            display: flex;
+            gap: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .stat-badge {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 700px;
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .toolbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .level-btn {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            font-size: 0.9rem;
+        }
+        .level-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.6);
+        }
+        .powers-group {
+            display: flex;
+            gap: 8px;
+        }
+        .power-btn {
+            background: rgba(51, 65, 85, 0.8);
+            color: #f8fafc;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .power-btn:hover:not(:disabled) {
+            background: rgba(71, 85, 105, 1);
+            border-color: #38bdf8;
+        }
+        .power-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .game-info-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+        .grid-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 320px;
+            margin-bottom: 10px;
+        }
+        .card-grid {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+            max-width: 500px;
+            justify-content: center;
+        }
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.08);
+            transition: transform 0.2s, background 0.2s, border-color 0.2s;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .card:hover {
+            transform: scale(1.04);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .card.flipped {
+            background: linear-gradient(135deg, #334155, #475569);
+            border-color: #38bdf8;
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            background: linear-gradient(135deg, #065f46, #047857);
+            border-color: #34d399;
+            opacity: 0.8;
+            cursor: default;
+        }
+        .card.trap {
+            background: linear-gradient(135deg, #7f1d1d, #991b1b);
+            border-color: #f87171;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 24px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        .modal-content h2 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: #f8fafc;
+        }
+        .modal-content p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .modal-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .modal-input:focus {
+            border-color: #38bdf8;
+        }
+        .modal-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+        .level-grid-container {
+            max-height: 220px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+            padding: 4px;
+        }
+        .level-node {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 8px 0;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #cbd5e1;
+        }
+        .level-node:hover {
+            border-color: #38bdf8;
+            background: #1e293b;
+        }
+        .level-node.unlocked {
+            background: #1e3a8a;
+            border-color: #3b82f6;
+            color: #fff;
+            font-weight: bold;
+        }
+        .combo-alert {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #facc15;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 50;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.3); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area" onclick="openLevelSelector()">
+            <h1 id="rankTitle">Çaylak Hafıza</h1>
+            <span id="subRankText">Seviye 1 • Dokun & Seç</span>
+        </div>
+        <div class="stats-panel">
+            <div class="stat-badge">🪙 <span id="goldCount">50</span></div>
+            <div class="stat-badge">⭐ <span id="scoreCount">0</span></div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="toolbar">
+            <button class="level-btn" onclick="openLevelSelector()">Seviye: <span id="currentLevelDisplay">1</span> / 100.000</button>
+            <div class="powers-group">
+                <button class="power-btn" onclick="useHint()">👁️ İpucu (<span id="hintCount">3</span>)</button>
+                <button class="power-btn" onclick="useFreeze()">❄️ Süre (<span id="freezeCount">2</span>)</button>
+            </div>
+        </div>
+
+        <div class="game-info-bar">
+            <span id="modeDisplay">Mod: Klasik Hafıza</span>
+            <span id="timerDisplay">Süre: 45s</span>
+        </div>
+
+        <div class="grid-wrapper" id="gridWrapper">
+            <div class="card-grid" id="cardGrid"></div>
+        </div>
+    </div>
+
+    <!-- LEVEL SEÇİCİ MODAL -->
+    <div class="modal" id="levelModal">
+        <div class="modal-content">
+            <h2>Seviye Seçimi (1 - 100.000)</h2>
+            <p>Gitmek istediğin seviyeyi seç veya direkt yaz:</p>
+            <div class="level-grid-container" id="quickLevelGrid"></div>
+            <input type="number" id="customLevelInput" class="modal-input" placeholder="Seviye No (Örn: 1540)" min="1" max="100000">
+            <button class="modal-btn" onclick="jumpToCustomLevel()">Seviyeye Git 🚀</button>
+        </div>
+    </div>
+
+    <!-- OYUN BİTTİ / GEÇTİ MODAL -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <h2 id="resultTitle">Tebrikler Seviye Geçildi! 🎉</h2>
+            <p id="resultDesc">Harika bir hafıza performansı sergiledin.</p>
+            <button class="modal-btn" onclick="nextLevel()">Sıradaki Seviye ⏩</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            level: 1,
+            maxUnlockedLevel: 1,
+            score: 0,
+            gold: 50,
+            hints: 3,
+            freezes: 2,
+            streak: 0
+        };
+
+        let currentMode = 'Klasik';
+        let timeLeft = 45;
+        let timerInterval = null;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let totalPairsNeeded = 0;
+        let isLocked = false;
+
+        const emojisPool = ['🎮','💻','🚀','🚗','⚡','🔥','💎','🎯','🏆','🧩','🦊','🐯','🦁','🐼','🐨','🦄','🐲','👽','🤖','⚡','🍔','🍕','🎧','🎸','⚽','🏀','🎾','🎲','🎨','👑','🔮','🎈','🍉','🍓','⭐','🌙','⚡','🌪️','🛸','⚓'];
+
+        // Ses Efektleri (Web Audio API - harici dosya gerekmez)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            let now = audioCtx.currentTime;
+            if (type === 'flip') {
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'match') {
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.setValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'win') {
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+                osc.frequency.setValueAtTime(900, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'trap') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(60, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('pro_zeka_state_100k');
+            if (saved) {
+                try {
+                    gameState = JSON.parse(saved);
+                } catch(e) {}
+            }
+            initLevel();
+        }
+
+        function saveGame() {
+            localStorage.setItem('pro_zeka_state_100k', JSON.stringify(gameState));
+        }
+
+        function initLevel() {
+            clearInterval(timerInterval);
+            isLocked = false;
+            flippedCards = [];
+            matchedPairs = 0;
+
+            document.getElementById('currentLevelDisplay').innerText = gameState.level;
+            document.getElementById('goldCount').innerText = gameState.gold;
+            document.getElementById('scoreCount').innerText = gameState.score;
+            document.getElementById('hintCount').innerText = gameState.hints;
+            document.getElementById('freezeCount').innerText = gameState.freezes;
+
+            updateRankInfo();
+            determineMode();
+            buildGridData();
+            renderGrid();
+            startTimer();
+        }
+
+        function updateRankInfo() {
+            let lvl = gameState.level;
+            let title = "Çaylak Hafıza";
+            let sub = `Seviye ${lvl} • Başlangıç`;
+            if (lvl >= 10) { title = "Hafıza Çırağı"; sub = `Seviye ${lvl} • Gelişiyor`; }
+            if (lvl >= 50) { title = "Hız Ustası"; sub = `Seviye ${lvl} • Seri`; }
+            if (lvl >= 200) { title = "Zeka Uzmanı"; sub = `Seviye ${lvl} • Profesyonel`; }
+            if (lvl >= 1000) { title = "Kuantum Hafıza Dehası"; sub = `Seviye ${lvl} • Efsane`; }
+            if (lvl >= 10000) { title = "👑 Tanrısal Zeka Kralı"; sub = `Seviye ${lvl} • Zirve`; }
+
+            document.getElementById('rankTitle').innerText = title;
+            document.getElementById('subRankText').innerText = sub;
+        }
+
+        function determineMode() {
+            let lvl = gameState.level;
+            if (lvl % 5 === 0) {
+                currentMode = "💣 Tuzak Kartlı Mod";
+                timeLeft = 40;
+            } else if (lvl % 4 === 0) {
+                currentMode = "⏱️ Süreli Yarış";
+                timeLeft = 25;
+            } else if (lvl % 3 === 0) {
+                currentMode = "🌑 Gölge/Silüet Modu";
+                timeLeft = 50;
+            } else {
+                currentMode = "Klasik Hafıza";
+                timeLeft = Math.max(20, 60 - Math.floor(lvl / 100));
+            }
+            document.getElementById('modeDisplay').innerText = `Mod: ${currentMode}`;
+        }
+
+        function buildGridData() {
+            let lvl = gameState.level;
+            // Dinamik ızgara hesabı (100K seviye boyunca dengeli büyüme)
+            let totalCards = 6;
+            if (lvl > 3) totalCards = 8;
+            if (lvl > 10) totalCards = 12;
+            if (lvl > 50) totalCards = 16;
+            if (lvl > 200) totalCards = 20;
+            if (lvl > 1000) totalCards = 24;
+            if (lvl > 5000) totalCards = 30;
+            if (lvl > 20000) totalCards = 36;
+
+            totalPairsNeeded = totalCards / 2;
+            let pool = [...emojisPool].sort(() => Math.random() - 0.5);
+            let selectedEmojis = pool.slice(0, totalPairsNeeded);
+            
+            let deck = [...selectedEmojis, ...selectedEmojis];
+            
+            // Tuzak kart ekleme
+            let trapCount = (currentMode.includes("Tuzak")) ? Math.min(4, Math.floor(lvl / 50) + 1) : 0;
+            for(let i=0; i<trapCount; i++) {
+                deck.push('💣');
+                totalPairsNeeded += 0.5; // Ekstra kart
+            }
+
+            deck = deck.sort(() => Math.random() - 0.5);
+
+            cards = deck.map((emoji, index) => ({
+                id: index,
+                emoji: emoji,
+                isMatched: false,
+                isTrap: emoji === '💣'
+            }));
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+            
+            let cols = 4;
+            if (cards.length <= 6) cols = 3;
+            else if (cards.length <= 12) cols = 4;
+            else if (cards.length <= 20) cols = 5;
+            else cols = 6;
+
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            cards.forEach(card => {
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.dataset.id = card.id;
+                el.innerHTML = `<span style="opacity:0">${card.emoji}</span>`;
+                el.onclick = () => handleCardClick(card.id, el);
+                grid.appendChild(el);
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.innerText = `Süre: ${timeLeft}s`;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = `Süre: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Süre bitti knk! Tekrar deneniyor...");
+                    initLevel();
+                }
+            }, 1000);
+        }
+
+        function handleCardClick(id, el) {
+            if (isLocked) return;
+            let card = cards.find(c => c.id === id);
+            if (card.isMatched || el.classList.contains('flipped')) return;
+
+            playSound('flip');
+            el.classList.add('flipped');
+            el.innerHTML = card.emoji;
+
+            if (card.isTrap) {
+                playSound('trap');
+                el.classList.add('trap');
+                isLocked = true;
+                setTimeout(() => {
+                    alert("Tuzak karta bastın knk! Süre cezası yedin.");
+                    timeLeft = Math.max(2, timeLeft - 5);
+                    initLevel();
+                }, 400);
+                return;
+            }
+
+            flippedCards.push({ id, emoji: card.emoji, element: el });
+
+            if (flippedCards.length === 2) {
+                isLocked = true;
+                let [c1, c2] = flippedCards;
+
+                if (c1.emoji === c2.emoji) {
+                    playSound('match');
+                    c1.element.classList.add('matched');
+                    c2.element.classList.add('matched');
+                    cards.find(c => c.id === c1.id).isMatched = true;
+                    cards.find(c => c.id === c2.id).isMatched = true;
+                    
+                    matchedPairs++;
+                    gameState.streak++;
+                    gameState.score += 10 * gameState.streak;
+
+                    showComboPopup(c2.element);
+                    flippedCards = [];
+                    isLocked = false;
+
+                    // Gerçek eşleşen çift sayısı (tuzaklar hariç)
+                    let actualPairsTarget = cards.filter(c => !c.isTrap).length / 2;
+                    if (matchedPairs >= actualPairsTarget) {
+                        levelPassed();
+                    }
+                } else {
+                    gameState.streak = 0;
+                    setTimeout(() => {
+                        c1.element.classList.remove('flipped');
+                        c1.element.innerHTML = `<span style="opacity:0">${c1.emoji}</span>`;
+                        c2.element.classList.remove('flipped');
+                        c2.element.innerHTML = `<span style="opacity:0">${c2.emoji}</span>`;
+                        flippedCards = [];
+                        isLocked = false;
+                    }, 650);
+                }
+            }
+            saveGame();
+        }
+
+        function showComboPopup(targetEl) {
+            if (gameState.streak < 2) return;
+            const rect = targetEl.getBoundingClientRect();
+            const popup = document.createElement('div');
+            popup.className = 'combo-alert';
+            popup.innerText = `${gameState.streak}x KOMBO! 🔥`;
+            popup.style.left = `${rect.left + rect.width / 2 - 40}px`;
+            popup.style.top = `${rect.top - 20}px`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 800);
+        }
+
+        function levelPassed() {
+            clearInterval(timerInterval);
+            playSound('win');
+            gameState.gold += 15 + Math.floor(gameState.level / 10);
+            if (gameState.level >= gameState.maxUnlockedLevel) {
+                gameState.maxUnlockedLevel = gameState.level + 1;
+            }
+            saveGame();
+
+            document.getElementById('resultTitle').innerText = `Tebrikler Seviye ${gameState.level} Geçildi! 🎉`;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        function nextLevel() {
+            document.getElementById('resultModal').classList.remove('active');
+            gameState.level++;
+            saveGame();
+            initLevel();
+        }
+
+        function openLevelSelector() {
+            const modal = document.getElementById('levelModal');
+            const grid = document.getElementById('quickLevelGrid');
+            grid.innerHTML = '';
+
+            // Hızlı seçim için ilk 50 seviye + en son açık olanlar
+            let maxShow = Math.min(100000, Math.max(50, gameState.maxUnlockedLevel + 10));
+            for (let i = 1; i <= maxShow; i++) {
+                const node = document.createElement('div');
+                node.className = `level-node ${i <= gameState.maxUnlockedLevel ? 'unlocked' : ''}`;
+                node.innerText = i;
+                node.onclick = () => {
+                    if (i <= gameState.maxUnlockedLevel || true) { // 100K için tüm kilitler açık
+                        gameState.level = i;
+                        saveGame();
+                        modal.classList.remove('active');
+                        initLevel();
+                    }
+                };
+                grid.appendChild(node);
+            }
+            modal.classList.add('active');
+        }
+
+        function jumpToCustomLevel() {
+            const input = document.getElementById('customLevelInput');
+            let val = parseInt(input.value);
+            if (val >= 1 && val <= 100000) {
+                gameState.level = val;
+                if (val > gameState.maxUnlockedLevel) gameState.maxUnlockedLevel = val;
+                saveGame();
+                document.getElementById('levelModal').classList.remove('active');
+                initLevel();
+            } else {
+                alert("Lütfen 1 ile 100.000 arasında geçerli bir seviye gir knk!");
+            }
+        }
+
+        function useHint() {
+            if (gameState.hints <= 0) {
+                alert("İpucu hakkın kalmadı knk!");
+                return;
+            }
+            gameState.hints--;
+            document.getElementById('hintCount').innerText = gameState.hints;
+            
+            // Eşleşmemiş bir çifti göster
+            let unmatched = cards.filter(c => !c.isMatched && !c.isTrap);
+            if (unmatched.length > 0) {
+                let targetEmoji = unmatched[0].emoji;
+                let targetEls = cards.filter(c => c.emoji === targetEmoji).map(c => document.querySelector(`[data-id='${c.id}']`));
+                targetEls.forEach(el => {
+                    el.style.borderColor = '#facc15';
+                    setTimeout(() => el.style.borderColor = '', 1200);
+                });
+            }
+            saveGame();
+        }
+
+        function useFreeze() {
+            if (gameState.freezes <= 0) {
+                alert("Süre dondurma hakkın kalmadı knk!");
+                return;
+            }
+            gameState.freezes--;
+            document.getElementById('freezeCount').innerText = gameState.freezes;
+            timeLeft += 15;
+            document.getElementById('timerDisplay').innerText = `Süre: ${timeLeft}s`;
+            saveGame();
+        }
+
+        // Oyunu Başlat
+        loadGame();
+    </script>
+</body>
+</html>
